@@ -24,7 +24,7 @@ const Navigation = () => {
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && menuRef.current) {
       // Animate menu opening
       gsap.fromTo(
         menuRef.current,
@@ -33,15 +33,18 @@ const Navigation = () => {
       );
 
       // Stagger animate menu items
+      const links = menuRef.current.querySelectorAll(".nav-link");
       gsap.fromTo(
-        ".nav-link",
+        links,
         { x: 50, opacity: 0 },
         { x: 0, opacity: 1, duration: 0.4, stagger: 0.1, delay: 0.2 }
       );
 
       // Prevent scroll when menu is open
       document.body.style.overflow = "hidden";
-    } else {
+    } else if (!isOpen && menuRef.current) {
+      // Animate menu closing
+      gsap.to(menuRef.current, { x: "100%", duration: 0.3, ease: "power3.in" });
       document.body.style.overflow = "auto";
     }
 
@@ -91,25 +94,21 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-foreground hover:text-primary transition-colors"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? (
-              <X size={28} weight="bold" />
-            ) : (
-              <List size={28} weight="bold" />
-            )}
-          </button>
+      {/* Mobile Hamburger Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="md:hidden p-2 text-foreground hover:text-primary transition-colors relative z-50"
+        aria-label="Toggle menu"
+      >
+        <List size={28} weight="bold" />
+      </button>
         </div>
       </nav>
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 md:hidden"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -117,18 +116,19 @@ const Navigation = () => {
       {/* Mobile Menu */}
       <div
         ref={menuRef}
-        className={`fixed top-0 right-0 bottom-0 w-[280px] z-50 glass-card transform ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
+        className="fixed top-0 right-0 bottom-0 w-[280px] z-50 glass-card transform translate-x-full md:hidden"
       >
-        <div className="flex flex-col h-full p-8 pt-24">
+        <div className="flex flex-col h-full p-8 pt-24 relative">
           {/* Close button inside menu */}
           <button
-            onClick={() => setIsOpen(false)}
-            className="absolute top-6 right-6 p-2 text-foreground hover:text-primary transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            className="absolute top-6 right-6 p-3 text-foreground hover:text-primary transition-colors hover:scale-110 z-10"
             aria-label="Close menu"
           >
-            <X size={28} weight="bold" />
+            <X size={32} weight="bold" />
           </button>
 
           {/* Menu Links */}
